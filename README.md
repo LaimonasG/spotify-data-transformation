@@ -82,6 +82,9 @@ AWS_AURORA_USERNAME="laimonas"   <br>
 AWS_AURORA_PASSWORD="Kokosas97"   <br>
 AWS_AURORA_DATABASE="spotifydataset"   <br>
 
+The dowloaded dataset files need to be placed inside data/ folder, in root directory. <br>
+File names are specified by dedicated variables, in index.js.
+
 ## Usage 
 
 You can run the app using the following command: 
