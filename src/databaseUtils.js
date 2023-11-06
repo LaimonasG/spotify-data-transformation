@@ -1,7 +1,5 @@
 import 'dotenv/config'
-import { Upload } from "@aws-sdk/lib-storage";
 import pg from "pg"
-import fastcsv from "fast-csv"
 import fs from "fs"
 
 const pgClient = new pg.Client({
@@ -14,7 +12,6 @@ const pgClient = new pg.Client({
     rejectUnauthorized: false,
   },
 })
-
 
 export async function connectToAuroraPostgresql() {
   try {
@@ -384,23 +381,6 @@ export async function createView(filename) {
   }
 }
 
-export async function selectQuery(filename) {
-  try {
-    const sqlQuery = fs.readFileSync(filename, 'utf8');
-
-    const result=await pgClient.query(sqlQuery);
-
-    console.log(`Test results:`);
-    result.rows.forEach(row => {
-      console.log(row);
-    });
-
-    } catch (error) {
-      console.error(`Error while doing selectfrom file ${filename}: `, error);
-    throw error;
-  }
-}
-
 export async function testView(viewName) {
   try {
     const query = `SELECT * FROM ${pgClient.escapeIdentifier(viewName)}`;
@@ -415,62 +395,4 @@ export async function testView(viewName) {
     throw error;
   }
 }
-
-export async function deleteView(viewName) {
-  try {
-    const query = `DROP VIEW IF EXISTS ${pgClient.escapeIdentifier(viewName)}`;
-
-    await pgClient.query(query);
-
-    console.log(`Deleted view: ${viewName}`);
-
-  } catch (error) {
-    console.error(`Error while deleting view ${viewName}: `, error);
-    throw error;
-  }
-}
-
-// CREATE TABLE artists(
-//   id VARCHAR(255) PRIMARY KEY,
-//   followers double precision DEFAULT 0.0,
-//   name VARCHAR(255),
-//   popularity INTEGER DEFAULT 0
-// );
-
-// CREATE TABLE genres(
-//   genre_id serial PRIMARY KEY,
-//   genre_name VARCHAR(255)
-// );
-
-// CREATE TABLE artist_genres(
-//   artist_id VARCHAR(255),
-//   genre_id INT,
-//   FOREIGN KEY(artist_id) REFERENCES artists(id),
-//   FOREIGN KEY(genre_id) REFERENCES genres(genre_id)
-// );
-
-// CREATE TABLE tracks(
-//   id VARCHAR(255) PRIMARY KEY,
-//   name VARCHAR(255),
-//   popularity integer,
-//   duration_ms INTEGER DEFAULT 0,
-//   explicit integer,
-//   id_artists VARCHAR[],
-//   year integer,
-//   month integer,
-//   day integer,
-//   danceability VARCHAR(255),
-//   energy double precision,
-//   key integer,
-//   loudness double precision,
-//   mode integer,
-//   speechiness double precision,
-//   acousticness double precision,
-//   instrumentalness double precision,
-//   liveness double precision,
-//   valence double precision,
-//   tempo double precision,
-//   time_signature integer
-// );
-
 

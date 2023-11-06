@@ -1,46 +1,35 @@
-//psql -h spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com
-
-import { readCsvData, writeCsvData, readFileToBuffer } from "./src/inOutUtils.js"
-import { filterTrackData, filterArtistData, explodeTrackReleaseDate, transformTrackDanceability, cleanupData } from "./src/helperMethods.js"
+import { readCsvData} from "./src/inOutUtils.js"
 import {
-  uploadToS3Bucket,
+   filterTrackData,
+   filterArtistData,
+   explodeTrackReleaseDate,
+   transformTrackDanceability,
+   cleanupData
+   } from "./src/helperMethods.js"
+import {
   connectToAuroraPostgresql,
   disconnectToAuroraPostgresql,
- // insertArtist,
-  getArtistsCount,
-  downloadCSVDataFromS3,
   insertArtistData,
   insertTrackData,
-  insertGenre,
- // insertTrack,
-  getTracks,
-  deleteAll,
-  getTracksCount,
-  getGenresCount,
-  //  uploadArrayToS3AsCSV,
   createView,
   testView,
-  deleteView,
-  selectQuery,
-  getArtists,
-  changeColumnDataType
+  deleteAll
 } from "./src/databaseUtils.js"
 import {downloadCSVDataFromS3,uploadToS3Bucket} from "./src/s3Utils.js"
-import { Readable } from "stream";
 
 
-const artistFilename = "dataset1/artists.csv"
-const trackFilename = "dataset1/tracks.csv"
-const artistFilePath = `data/${artistFilename}`;
-const trackFilePath = `data/${trackFilename}`;
-const artistResultFilePath = `data/result/${artistFilename}`
-const trackResultFilePath = `data/result/${trackFilename}`
+const artist1Filename = "artists1.csv"
+const track1Filename = "tracks1.csv"
+const artist2Filename = "artists2.csv"
+const track2Filename = "tracks2.csv"
+const artist1FilePath = `data/${artist1Filename}`;
+const track1FilePath = `data/${track1Filename}`;
+const artist2FilePath = `data/${artist2Filename}`;
+const track2FilePath = `data/${track2Filename}`;
 
-const view1Filename="sqlViews/view1.sql"
+const viewFolderName="sqlViews"
 const view1Name="view1"
-const view2Filename="sqlViews/view2.sql"
 const view2Name="view2"
-const view3Filename="sqlViews/view3.sql"
 const view3Name="view3"
 
 //if value set to null, will read whole file
@@ -50,7 +39,7 @@ const insertBatchSize = 100
 main()
 
 async function main() {
-  readCsvData(trackFilePath, linesToRead, (error, trackData, trackHeader) => {
+  readCsvData(track1FilePath, linesToRead, (error, trackData, trackHeader) => {
     if (error) {
       console.error('Error:', error);
     } else {
@@ -66,7 +55,7 @@ async function main() {
 
       const cleanTrackData = cleanupData(transformedTrackDanceability, 5);
 
-      readCsvData(artistFilePath, linesToRead, async (error, artistData, artistHeader) => {
+      readCsvData(artist1FilePath, linesToRead, async (error, artistData, artistHeader) => {
         if (error) {
           console.error('Error:', error);
         } else {
@@ -85,29 +74,37 @@ async function main() {
           const flatArtistHeader = Object.values(artistHeader.flat());
           cleanArtistData.unshift(flatArtistHeader)
 
-          await uploadToS3Bucket(cleanTrackData, trackFilename)
-          await uploadToS3Bucket(cleanArtistData, artistFilename)
+          await uploadToS3Bucket(cleanTrackData, track1Filename)
+          await uploadToS3Bucket(cleanArtistData, artist1Filename)
 
           try {
             await connectToAuroraPostgresql();
 
-           // await  changeColumnDataType('danceability','VARCHAR')
-           // await deleteAll()
+            await deleteAll()
 
-            if (cleanArtistData.length <0) {
+            if (cleanArtistData.length >0) {
               const dataToInsert = cleanArtistData.slice(1)
               await insertArtistData(dataToInsert, insertBatchSize)
             }
             else
               console.log("No artists to insert.")
 
-            if (cleanTrackData.length < 0) {
+            if (cleanTrackData.length > 0) {
               const dataToInsert = cleanTrackData.slice(1)
               await insertTrackData(dataToInsert, insertBatchSize)
             } else
               console.log("No tracks to insert.")
+          
+           console.log("Testing the first view: ")
+           await createView(`${viewFolderName}/${view1Name}.sql`)
+           await testView(view1Name)
 
-           await createView(view3Filename)
+           console.log("Testing the second view: ")
+           await createView(`${viewFolderName}/${view2Name}.sql`)
+           await testView(view2Name)
+
+           console.log("Testing the third view: ")
+           await createView(`${viewFolderName}/${view3Name}.sql`)
            await testView(view3Name)
 
           } catch (error) {
@@ -125,7 +122,6 @@ async function main() {
 
         //  console.log("Art count: ", artists.length)
         //  console.log("Track count: ", tracks.length)
-
 
       });
     }

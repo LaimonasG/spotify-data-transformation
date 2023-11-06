@@ -1,5 +1,6 @@
 import { S3Client, ListObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-
+import { Upload } from "@aws-sdk/lib-storage";
+import fastcsv from "fast-csv"
 
 const s3Client = new S3Client({
     region: process.env.S3_REGION,
@@ -24,15 +25,12 @@ const s3Client = new S3Client({
           item[6] = item[6].replace(/\[|\]/g, '');
         }
   
-        return item // Remove square brackets
+        return item
       });
-  
-      //  console.log("Data inside upload: ", jsonArray)
   
       // Join the JSON strings with newlines
       const jsonString = jsonArray.join('\n');
   
-      // console.log("json string: ", jsonString)
       // Create a buffer from the formatted JSON string
       const buffer = Buffer.from(jsonString, 'utf8');
   
@@ -82,7 +80,6 @@ const s3Client = new S3Client({
   
       const newestFile = filteredFilenames[0];
       const { Key } = newestFile;
-      //console.log("Failo pavadinimas: ", Key)
   
       const getObjectCommand = new GetObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -94,17 +91,16 @@ const s3Client = new S3Client({
   
       const data = [];
   
-      // let acc = 0;
       await new Promise((resolve, reject) => {
-        let acc = 0; // Initialize a row counter
-        let lastRow; // Variable to store the last successfully parsed row
+        let acc = 0;
+        let lastRow;
   
         fastcsv.parseStream(Body, { headers: allowHeaders })
           .on('data', (row) => {
             if (!skipFirstRow) {
-              lastRow = row; // Store the last successfully parsed row
+              lastRow = row;
               data.push(row);
-              acc++; // Increment the row counter
+              acc++;
             } else {
               skipFirstRow = false;
             }

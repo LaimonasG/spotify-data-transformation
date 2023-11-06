@@ -57,18 +57,11 @@ export function transformTrackDanceability(trackData) {
 
 export function cleanupData(array, fieldNr) {
   array.forEach(el1 => {
-    //remove unnecessary backslashes
-    // el1[fieldNr] = el1[fieldNr].replace(/'/g, '"');
+    //escape double ""
+    //  el1[fieldNr] = el1[fieldNr].replace(/""/g, '""""');
 
-
-    // //replace single quotes with double qoutes
+    // //replace single quotes inside string with double qoutes
     // el1[fieldNr] = el1[fieldNr].replace(/(?<=\[|,)'|'(?=\]|,)/g, `''`);
-
-    // //replace "" with "
-    // el1[fieldNr] = el1[fieldNr].replace(/""/g, '"')
-
-    // //replace "" with "
-    // el1[fieldNr] = el1[fieldNr].replace(/'/g, '"');
 
     // //replace "" with "
     // el1[fieldNr] = el1[fieldNr].replace(/(?<=[\w])'(?=[\w])/g, `"'"`);
