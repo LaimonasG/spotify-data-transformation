@@ -1,14 +1,14 @@
-# Spotify data transformation 
+# Spotify data transformation  
 
-This task includes ingestion, transformation and analysis of Spotify datasets. Implemented using node.js with "AWS S3 Bucket", "AWS Aurora" (Posgresql) integrations. 
+This task includes ingestion, transformation and analysis of Spotify datasets. Implemented using node.js with "AWS S3 Bucket", "AWS Aurora" (Posgresql) integrations.  
 
 ## Table of contents 
 
-- [Getting Started](#getting-started) 
-- [Prerequisites](#prerequisites) 
-- [Installation](#installation) 
-- [Usage](#usage) 
-- [Differences from the Task](#differences-from-the-task) 
+- [Getting Started](#getting-started)  
+- [Prerequisites](#prerequisites)  
+- [Installation](#installation)  
+- [Usage](#usage)  
+- [Differences from the Task](#differences-from-the-task)  
 
 ## Getting started 
 
@@ -29,9 +29,9 @@ Implement a Node.js script to ingest the data from the source and transform it a
 Format and structure the data as needed for analysis:  
  -Explode track release date into separate columns: year, month, day. 
  -Transform track danceability into string values based on these intervals: 
- [0; 0.5) assign ‘Low’; 
- [0,5; 0.6] assign ‘Medium’; 
- (0.6; 1] assign ‘High’. 
+ [0; 0.5) assign ‘Low’;  
+ [0,5; 0.6] assign ‘Medium’;  
+ (0.6; 1] assign ‘High’.  
  
 ## Data Storage: 
  -Store the cleaned and transformed data into AWS S3 as your storage solution. 
@@ -65,22 +65,22 @@ Follow these steps to get the project up and running on your local machine.
 
 ```bash
    git clone https://github.com/LaimonasG/spotify-data-transformation.git 
-   cd your-repo
+   cd spotify-data-transformation
    npm install
 ```
 
 After this, you will need to add enviromental variables to .env file in root directory: 
 
-AWS_BUCKET_NAME="spotifydatatransformed" 
-AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS" 
-AWS_SECRET_ACCESS_KEY="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" 
-S3_REGION="eu-north-1" 
+AWS_BUCKET_NAME="spotifydatatransformed"  
+AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS"  
+AWS_SECRET_ACCESS_KEY="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"  
+S3_REGION="eu-north-1"  
 
-AWS_AURORA_ENDPOINT="spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com" 
-AWS_AURORA_PORT="5432" 
-AWS_AURORA_USERNAME="laimonas" 
-AWS_AURORA_PASSWORD="Kokosas97" 
-AWS_AURORA_DATABASE="spotifydataset" 
+AWS_AURORA_ENDPOINT="spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com"  
+AWS_AURORA_PORT="5432"  
+AWS_AURORA_USERNAME="laimonas"  
+AWS_AURORA_PASSWORD="Kokosas97"  
+AWS_AURORA_DATABASE="spotifydataset"  
 
 ## Usage 
 
