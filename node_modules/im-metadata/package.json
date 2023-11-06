@@ -1,0 +1,39 @@
+{
+  "name": "im-metadata",
+  "version": "3.0.1",
+  "description": "Retrieve image metadata using ImageMagick's identify command",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test.js",
+    "hint": "./node_modules/.bin/jshint index.js test.js",
+    "watch": "./node_modules/.bin/mocha -w test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Turistforeningen/node-im-metadata.git"
+  },
+  "keywords": [
+    "ImageMagick",
+    "identify",
+    "image",
+    "metadata",
+    "exif"
+  ],
+  "author": "Hans Kristian Flaatten <hans.kristian.flaatten@turistforeningen.no>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Turistforeningen/node-im-metadata/issues"
+  },
+  "homepage": "https://github.com/Turistforeningen/node-im-metadata",
+  "devDependencies": {
+    "jshint": "~2",
+    "mocha": "~3.0.2"
+  },
+  "engines": {
+    "node": ">=0.10",
+    "iojs": ">=1.0.0"
+  },
+  "dependencies": {
+    "filesize-parser": "^1.3.0"
+  }
+}
