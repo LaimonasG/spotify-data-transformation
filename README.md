@@ -29,9 +29,9 @@ Implement a Node.js script to ingest the data from the source and transform it a
 Format and structure the data as needed for analysis:  
  -Explode track release date into separate columns: year, month, day. 
  -Transform track danceability into string values based on these intervals: 
- [0; 0.5) assign ‘Low’;  
- [0,5; 0.6] assign ‘Medium’;  
- (0.6; 1] assign ‘High’.  
+ [0; 0.5) assign ‘Low’;  <br>
+ [0,5; 0.6] assign ‘Medium’;   <br>
+ (0.6; 1] assign ‘High’.   <br>
  
 ## Data Storage: 
  -Store the cleaned and transformed data into AWS S3 as your storage solution. 
@@ -71,16 +71,16 @@ Follow these steps to get the project up and running on your local machine.
 
 After this, you will need to add enviromental variables to .env file in root directory: 
 
-AWS_BUCKET_NAME="spotifydatatransformed"  
-AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS"  
-AWS_SECRET_ACCESS_KEY="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"  
-S3_REGION="eu-north-1"  
+AWS_BUCKET_NAME="spotifydatatransformed"   <br>
+AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS"   <br>
+AWS_SECRET_ACCESS_KEY="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"   <br>
+S3_REGION="eu-north-1"   <br>
 
-AWS_AURORA_ENDPOINT="spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com"  
-AWS_AURORA_PORT="5432"  
-AWS_AURORA_USERNAME="laimonas"  
-AWS_AURORA_PASSWORD="Kokosas97"  
-AWS_AURORA_DATABASE="spotifydataset"  
+AWS_AURORA_ENDPOINT="spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com"   <br>
+AWS_AURORA_PORT="5432"   <br>
+AWS_AURORA_USERNAME="laimonas"   <br>
+AWS_AURORA_PASSWORD="Kokosas97"   <br>
+AWS_AURORA_DATABASE="spotifydataset"   <br>
 
 ## Usage 
 
