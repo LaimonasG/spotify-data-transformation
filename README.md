@@ -94,7 +94,7 @@ Then in the console you will see information about the read data, transformed da
 Using variables linesToRead and insertBatchSize, inside index.js file, you can change the amount of rows read and the batch size for uploading the data to 
 Aurora RDS. If linesToRead value is set to null, all rows will be read. 
 
-Uploaded data inside S3 bucket is stored inside result/ folder, each name has a unique timestamp: 
+Uploaded S3 bucket data is stored inside result/ folder, each name has a unique timestamp: 
 
 ![image](https://github.com/LaimonasG/spotify-data-transformation/assets/79421767/0ca5f2e9-05ce-47ce-8623-6d1abf06e3b5)
 
@@ -104,9 +104,9 @@ Uploaded data inside S3 bucket is stored inside result/ folder, each name has a 
 The finished task has some parts unfinished, due to lack of expertise with big data. 
 
  -I was able to upload all the data in parralel to S3 Bucket, but couldn't download it. Spent a considerable amount of time, trying to "clean up" the data, 
- using regex replace statements. Parsing fails due to track names, because they have unexpected symbols for the parser. The download 
+ using regex replace statements. Parsing fails due to track names, because they have unexpected symbols for the parser.
 
- -Uploading to Aurora RDS is also flawed. Current approach mimics batch insertion, but still performs seperate insert statements for each row. Explored posibilities to  
- insert using COPY statement, this is probably the correct approach, but I didn't have enough time. 
+ -Uploading to Aurora RDS is also flawed. Current approach mimics batch insertion, but still performs seperate insert statements for each row. Explored <br>
+ posibilities to insert using COPY statement, this is probably the correct approach, but I didn't have enough time. <br>
 
  
