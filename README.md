@@ -76,14 +76,16 @@ AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS"   <br>
 AWS_SECRET_ACCESS_KEY="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"   <br>
 S3_REGION="eu-north-1"   <br>
 
-AWS_AURORA_ENDPOINT="spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com"   <br>
-AWS_AURORA_PORT="5432"   <br>
-AWS_AURORA_USERNAME="laimonas"   <br>
-AWS_AURORA_PASSWORD="Kokosas97"   <br>
-AWS_AURORA_DATABASE="spotifydataset"   <br>
+AWS_AURORA_ENDPOINT  <br>
+AWS_AURORA_PORT   <br>
+AWS_AURORA_USERNAME   <br>
+AWS_AURORA_PASSWORD   <br>
+AWS_AURORA_DATABASE   <br>
 
 The dowloaded dataset files need to be placed inside data/ folder, in root directory. <br>
 File names are specified by dedicated variables, in index.js.
+
+Due to this being a public repository, i can't share AWS configuration.
 
 ## Usage 
 
