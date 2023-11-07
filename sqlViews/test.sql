@@ -13,34 +13,54 @@
 -- select * from tracks
 -- WHERE id = '00dYkxYZB1sChcRL6aUK85';
 
-SELECT ta.track_id, SUM(a.followers) AS total_f
-from tracks t
-FROM (
-    SELECT UNNEST(id_artists) AS artist_id, id AS track_id
-    FROM tracks
-) ta
-JOIN artists a ON ta.artist_id = a.id
-GROUP BY ta.track_id
-HAVING SUM(a.followers) > 0;
+-- SELECT ta.track_id, SUM(a.followers) AS total_f
+-- from tracks t
+-- FROM (
+--     SELECT UNNEST(id_artists) AS artist_id, id AS track_id
+--     FROM tracks
+-- ) ta
+-- JOIN artists a ON ta.artist_id = a.id
+-- GROUP BY ta.track_id
+-- HAVING SUM(a.followers) > 0;
 
-CREATE OR REPLACE VIEW view1 AS
+-- CREATE OR REPLACE VIEW view1 AS
+-- SELECT
+--     t.id AS track_id,
+--     t.name AS track_name,
+--     t.popularity AS popularity,
+--     t.energy AS energy,
+--     t.danceability AS danceability,
+--     COALESCE(SUM(a.total_f), 0) AS total_followers
+-- FROM tracks t
+-- LEFT JOIN (
+--     SELECT ta.track_id, SUM(a.followers) AS total_f
+--     FROM (
+--         SELECT UNNEST(id_artists) AS artist_id, id AS track_id
+--         FROM tracks
+--     ) ta
+--     JOIN artists a ON ta.artist_id = a.id
+--     GROUP BY ta.track_id
+--     HAVING SUM(a.followers) > 0
+-- ) a ON a.track_id = t.id
+-- GROUP BY t.id, t.name, t.id_artists
+-- ORDER BY t.id
+
 SELECT
     t.id AS track_id,
     t.name AS track_name,
-    t.popularity AS popularity,
-    t.energy AS energy,
-    t.danceability AS danceability,
-    COALESCE(SUM(a.total_f), 0) AS total_followers
+    t.id_artists AS artist_ids,
+    COALESCE(SUM(a.followers), 0) AS total_followers
 FROM tracks t
-LEFT JOIN (
-    SELECT ta.track_id, SUM(a.followers) AS total_f
-    FROM (
-        SELECT UNNEST(id_artists) AS artist_id, id AS track_id
-        FROM tracks
-    ) ta
-    JOIN artists a ON ta.artist_id = a.id
-    GROUP BY ta.track_id
-    HAVING SUM(a.followers) > 0
-) a ON a.track_id = t.id
-GROUP BY t.id, t.name, t.id_artists
-ORDER BY t.id
+LEFT JOIN LATERAL (
+    SELECT SUM(a.followers) AS followers
+    FROM UNNEST(t.id_artists) AS artist_id
+    JOIN artists a ON a.id = artist_id
+) a ON true
+WHERE t.id = '35iwgR4jXetI318WEWsa1Q'
+GROUP BY t.id, t.name, t.id_artists;
+
+-- select 
+--     a.id AS id,
+--     a.followers AS followers
+--     from artists a
+--     where a.id='0DheY5irMjBUeLybbCUEZ2' 

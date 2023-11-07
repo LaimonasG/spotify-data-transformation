@@ -17,6 +17,8 @@ import {
 } from "./src/databaseUtils.js"
 import {downloadCSVDataFromS3,uploadToS3Bucket} from "./src/s3Utils.js"
 
+const artist1FilePathTest = `myData/artists.csv`;
+const track1FilePathTest = `myData/tracks.csv`;
 
 const artist1Filename = "artists1.csv"
 const track1Filename = "tracks1.csv"
@@ -33,13 +35,13 @@ const view2Name="view2"
 const view3Name="view3"
 
 //if value set to null, will read whole file
-const linesToRead = 1000;
-const insertBatchSize = 100
+const linesToRead = null;
+const insertBatchSize = 5;
 
 main()
 
 async function main() {
-  readCsvData(track1FilePath, linesToRead, (error, trackData, trackHeader) => {
+  readCsvData(track1FilePathTest, linesToRead, (error, trackData, trackHeader) => {
     if (error) {
       console.error('Error:', error);
     } else {
@@ -55,7 +57,7 @@ async function main() {
 
       const cleanTrackData = cleanupData(transformedTrackDanceability, 5);
 
-      readCsvData(artist1FilePath, linesToRead, async (error, artistData, artistHeader) => {
+      readCsvData(artist1FilePathTest, linesToRead, async (error, artistData, artistHeader) => {
         if (error) {
           console.error('Error:', error);
         } else {
@@ -94,10 +96,11 @@ async function main() {
               await insertTrackData(dataToInsert, insertBatchSize)
             } else
               console.log("No tracks to insert.")
-          
+
+
            console.log("Testing the first view: ")
            await createView(`${viewFolderName}/${view1Name}.sql`)
-           await testView(view1Name)
+          await testView(view1Name)
 
            console.log("Testing the second view: ")
            await createView(`${viewFolderName}/${view2Name}.sql`)

@@ -74,9 +74,9 @@ export async function insertArtistData(data, batchSize) {
     for (const a of data) {
       const artist = {
         id: a[0],
-        followers: a[1],
+        followers: parseFloat(a[1]),
         name: a[3],
-        popularity: a[4]
+        popularity: parseInt(a[4])
       };
 
       artistBatch.push(artist);
@@ -387,7 +387,6 @@ export async function testView(viewName) {
 
     const result=await pgClient.query(query);
 
-
     console.log(`Results of view: ${viewName} `, result.rows)
 
     } catch (error) {
@@ -395,4 +394,3 @@ export async function testView(viewName) {
     throw error;
   }
 }
-
