@@ -35,13 +35,13 @@ const view2Name="view2"
 const view3Name="view3"
 
 //if value set to null, will read whole file
-const linesToRead = null;
+const linesToRead = 100;
 const insertBatchSize = 5;
 
 main()
 
 async function main() {
-  readCsvData(track1FilePathTest, linesToRead, (error, trackData, trackHeader) => {
+  readCsvData(track1FilePath, linesToRead, (error, trackData, trackHeader) => {
     if (error) {
       console.error('Error:', error);
     } else {
@@ -57,7 +57,7 @@ async function main() {
 
       const cleanTrackData = cleanupData(transformedTrackDanceability, 5);
 
-      readCsvData(artist1FilePathTest, linesToRead, async (error, artistData, artistHeader) => {
+      readCsvData(artist1FilePath, linesToRead, async (error, artistData, artistHeader) => {
         if (error) {
           console.error('Error:', error);
         } else {
