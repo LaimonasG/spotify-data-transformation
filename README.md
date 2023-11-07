@@ -71,10 +71,10 @@ Follow these steps to get the project up and running on your local machine.
 
 After this, you will need to add enviromental variables to .env file in root directory: 
 
-AWS_BUCKET_NAME="spotifydatatransformed"   <br>
-AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS"   <br>
-AWS_SECRET_ACCESS_KEY="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"   <br>
-S3_REGION="eu-north-1"   <br>
+AWS_BUCKET_NAME   <br>
+AWS_ACCESS_KEY_ID   <br>
+AWS_SECRET_ACCESS_KEY   <br>
+S3_REGION   <br>
 
 AWS_AURORA_ENDPOINT  <br>
 AWS_AURORA_PORT   <br>
