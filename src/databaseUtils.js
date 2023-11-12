@@ -1,6 +1,25 @@
 import 'dotenv/config'
 import pg from "pg"
 import fs from "fs"
+import pgPromise  from 'pg-promise';
+
+const cn = {
+  host: process.env.AWS_AURORA_ENDPOINT,
+  port: process.env.AWS_AURORA_PORT,
+  database: process.env.AWS_AURORA_DATABASE,
+  user: process.env.AWS_AURORA_USERNAME,
+  password: process.env.AWS_AURORA_PASSWORD,
+  max: 30,
+  ssl: {
+    // Set the SSL mode
+    mode: 'prefer',
+    rejectUnauthorized: false, // Options: 'disable', 'require', 'prefer', 'allow'
+  },
+};
+
+const pgp = pgPromise(/* options */);
+const db = pgp(cn);
+
 
 const pgClient = new pg.Client({
   host: process.env.AWS_AURORA_ENDPOINT,
@@ -33,36 +52,9 @@ export async function disconnectToAuroraPostgresql() {
   }
 }
 
-export async function insertGenre(genreName, artistId) {
-  try {
-    const insertGenreQuery = `
-      INSERT INTO genres (genre_name)
-      VALUES ($1)
-      RETURNING genre_id`;
-
-    const genreResult = await pgClient.query(insertGenreQuery, [
-      genreName,
-    ]);
-
-    const insertArtist_genresQuery = `
-    INSERT INTO artist_genres (artist_id,genre_id)
-    VALUES ($1,$2)
-    RETURNING artist_id,genre_id`;
-
-    await pgClient.query(insertArtist_genresQuery, [
-      artistId,
-      genreResult.rows[0].genre_id
-    ]);
-
-  } catch (error) {
-    console.error('Error inserting genre data', error);
-    throw error;
-  }
-}
-
 export async function insertArtistData(data, batchSize) {
   try {
-    await pgClient.query("BEGIN"); 
+    console.time('Insert artist data');
     let acc = 0;
 
     let batchCount = 0;
@@ -84,22 +76,34 @@ export async function insertArtistData(data, batchSize) {
 
       const genres = a[2];
 
-      if (genres.length > 0) {
-        for (const g of genres) {
-          const genre = {
-            genre_name: g,
-            artistId: artist.id
-          };
-          genreBatch.push(genre);
-        }
+      if(genres!== "[]"){
+        const replaceSingleQuotes = genres.replace(/'/g, '"').trim();
+        const replaceInsideQuotes=replaceSingleQuotes.replace(/(?<!\[|,#|\s)"(?!\]|,)/g,`'`)
+        const replaceNScenario=replaceInsideQuotes.replace(/"n'/g,`'n'`)
+        try{
+          const genreArray = JSON.parse(replaceNScenario);
+          if (Array.isArray(genreArray) && genreArray.length > 0) {
+            for (const g of genreArray) {
+              const genre = {
+                genre_name: g,
+                artistId: artist.id
+              };
+              genreBatch.push(genre);
+            }
+          }
+        }catch(error){
+          console.log("err: ", error)
+          console.log("err data: ", replaceNScenario)
+        }       
       }
 
       if (acc % batchSize === 0) {
         batchCount = batchCount + 1
         await insertArtists(artistBatch, batchCount);
 
-        if(genreBatch.length>0)
-        await insertGenres(genreBatch, batchCount);
+        if(genreBatch.length>0){
+          await insertGenres(genreBatch, batchCount);
+        }
 
         // Clear the batches
         artistBatch.length = 0;
@@ -117,105 +121,83 @@ export async function insertArtistData(data, batchSize) {
       await insertGenres(genreBatch);
     }
 
+    console.timeEnd('Insert artist data');
     console.log("Inserted artists count:", acc);
-    await pgClient.query("COMMIT");
-
   } catch (error) {
     console.error('Error inserting artist data', error);
-    await pgClient.query("ROLLBACK");
     throw error;
   }
 }
 
 async function insertArtists(artists, batchCount) {
-  try {
-    const query = `
-      INSERT INTO artists (id, followers, name, popularity)
-      VALUES ($1, $2, $3, $4)`;
+    await db.tx(async (t) => {
+      const insertQuery = pgp.helpers.insert(artists, ['id', 'followers', 'name', 'popularity'], 'artists');
 
-    for (const artist of artists) {
-      const values = [artist.id, artist.followers, artist.name, artist.popularity];
-      await pgClient.query(query, values);
-    }
+      await t.any(insertQuery);      
 
-    console.log(`Batch ${batchCount} inserted succesfully to artist table`)
-
-  } catch (error) {
-    console.error('Error inserting artists', error);
+    }).then(data => {
+      console.log(`Batch ${batchCount} inserted successfully to artist table`);
+  })
+  .catch(error => {
+    console.error(`Error inserting artists in batch ${batchCount}`, error);
     throw error;
-  }
+  });  
 }
 
 async function insertTracks(tracks, batchCount) {
-  try {
-    const insertQuery = `
-      INSERT INTO tracks (id, name, popularity, duration_ms,explicit,id_artists,year,month,day,danceability,
-        energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,time_signature)
-      VALUES ($1, $2, $3,$4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
-      RETURNING id`;
+  await db.tx(async (t) => {
+    const insertQuery = pgp.helpers.insert(tracks, [
+      'id', 'name', 'popularity', 'duration_ms', 'explicit', 'id_artists', 'year', 'month', 'day',
+      'danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
+      'instrumentalness', 'liveness', 'valence', 'tempo', 'time_signature'
+    ], 'tracks') + 'RETURNING id';
 
-    for (const track of tracks) {
-      const values = [
-        track.id,
-        track.name,
-        parseInt(track.popularity),
-        parseInt(track.duration_ms),
-        parseInt(track.explicit),
-        track.id_artists,
-        parseInt(track.year),
-        parseInt(track.month),
-        parseInt(track.day),
-        track.danceability,
-        parseFloat(track.energy),
-        parseInt(track.key),
-        parseFloat(track.loudness),
-        parseInt(track.mode),
-        parseFloat(track.speechiness),
-        parseFloat(track.acousticness),
-        parseFloat(track.instrumentalness),
-        parseFloat(track.liveness),
-        parseFloat(track.valence),
-        parseFloat(track.tempo),
-        parseInt(track.time_signature)
-      ];
-      await pgClient.query(insertQuery, values);
-    }
+    await t.any(insertQuery);
 
-    console.log(`Batch ${batchCount} inserted succesfully to track table`)
-
-  } catch (error) {
-    console.error('Error inserting tracks', error);
-    throw error;
-  }
+  }).then(data => {
+    console.log(`Batch ${batchCount} inserted successfully to track table`);
+})
+.catch(error => {
+  console.error(`Error inserting tracks in batch ${batchCount}`, error);
+  throw error;
+}); 
 }
 
 async function insertGenres(genres) {
-  try {
-    const insertGenreQuery = `
-      INSERT INTO genres (genre_name)
-      VALUES ($1)
-      RETURNING genre_id`;
+  await db.tx(async (t) => {
+      const genreNames = genres.map((x) => x.genre_name);
 
-    const insertArtistGenresQuery = `
-      INSERT INTO artist_genres (artist_id, genre_id)
-      VALUES ($1, $2)`;
+      const insertGenresQuery = pgp.helpers.insert(
+        genreNames.map((name) => ({ genre_name: name })),
+        ['genre_name'],
+        'genres'
+      ) + ' RETURNING genre_id';
+      const genreIds = await t.any(insertGenresQuery);
 
-    for (const gen of genres) {
-      const genreResults = await pgClient.query(insertGenreQuery, [gen.name]);
-      const artistId = gen.artistId;
-      const genreId = genreResults.rows[0].genre_id;
-      await pgClient.query(insertArtistGenresQuery, [artistId, genreId]);
-    }
+      const artistIds = genres.map((x) => x.artistId);
 
-  } catch (error) {
-    console.error('Error inserting genres', error);
-    throw error;
-  }
+      const genreArtistsData = genreIds.map((genreId, index) => ({
+        artist_id: artistIds[index],
+        genre_id: genreId.genre_id,
+      }));
+
+      const insertGenreArtistsQuery = pgp.helpers.insert(
+        genreArtistsData,
+        ['artist_id', 'genre_id'],
+        'artist_genres'
+      );
+      await t.any(insertGenreArtistsQuery);
+
+  }).then()
+.catch(error => {
+  console.error(`Error inserting genres.`, error);
+  throw error;
+}); 
 }
 
 export async function insertTrackData(data, batchSize) {
   try {
-    await pgClient.query("BEGIN")
+    console.time('Insert track data');
     let acc = 0
 
     let batchCount = 0;
@@ -227,26 +209,26 @@ export async function insertTrackData(data, batchSize) {
       const track = {
         id: t[0],
         name: t[1],
-        popularity: t[2],
-        duration_ms: t[3],
-        explicit: t[4],
+        popularity: parseInt(t[2]),
+        duration_ms: parseInt(t[3]),
+        explicit: parseInt(t[4]),
         id_artists: "{" + t[6] + "}",
-        year: t[7],
-        month: t[8],
-        day: t[9],
-        danceability: t[10],
-        energy: t[11],
-        key: t[12],
-        loudness: t[13],
-        mode: t[14],
-        speechiness: t[15],
-        acousticness: t[16],
-        instrumentalness: t[17],
-        liveness: t[18],
-        valence: t[19],
-        tempo: t[20],
-        time_signature: t[21]
-      }
+        year: parseInt(t[7]),
+        month: parseInt(t[8]),
+        day: parseInt(t[9]),
+        danceability: parseFloat(t[10]),
+        energy: parseFloat(t[11]),
+        key: parseInt(t[12]),
+        loudness: parseFloat(t[13]),
+        mode: parseInt(t[14]),
+        speechiness: parseFloat(t[15]),
+        acousticness: parseFloat(t[16]),
+        instrumentalness: parseFloat(t[17]),
+        liveness: parseFloat(t[18]),
+        valence: parseFloat(t[19]),
+        tempo: parseFloat(t[20]),
+        time_signature: parseInt(t[21])
+      };
 
       trackBatch.push(track);
       acc += 1;
@@ -258,6 +240,7 @@ export async function insertTrackData(data, batchSize) {
       }
     };
 
+    console.timeEnd('Insert track data');
     console.log("Inserted tracks count:", acc)
     await pgClient.query("COMMIT")
 
@@ -349,16 +332,16 @@ export async function getGenresCount() {
 
 export async function deleteAll() {
   try {
-    const query4 = `DELETE from artist_genres`;
+    const query4 = `TRUNCATE TABLE artist_genres`;
     await pgClient.query(query4);
 
-    const query3 = `DELETE from genres`;
+    const query3 = `TRUNCATE TABLE genres CASCADE`;
     await pgClient.query(query3);
 
-    const query1 = `DELETE from artists`;
+    const query1 = `TRUNCATE TABLE artists CASCADE`;
     await pgClient.query(query1);
 
-    const query2 = `DELETE from tracks`;
+    const query2 = `TRUNCATE TABLE tracks`;
     await pgClient.query(query2);
 
   } catch (error) {
@@ -381,6 +364,20 @@ export async function createView(filename) {
   }
 }
 
+export async function deleteView(viewName) {
+  try {
+    const query = `DROP VIEW IF EXISTS ${pgClient.escapeIdentifier(viewName)}`;
+
+    await pgClient.query(query);
+
+    console.log(`Deleted view: ${viewName}`);
+
+  } catch (error) {
+    console.error(`Error while deleting view ${viewName}: `, error);
+    throw error;
+  }
+}
+
 export async function testView(viewName) {
   try {
     const query = `SELECT * FROM ${pgClient.escapeIdentifier(viewName)}`;
@@ -391,6 +388,19 @@ export async function testView(viewName) {
 
     } catch (error) {
     console.error(`Error while displaying view ${viewName}: `, error);
+    throw error;
+  }
+}
+
+export async function altertable() {
+  try {
+    const query = `ALTER TABLE artist_genres
+    ADD COLUMN id SERIAL PRIMARY KEY;`;
+
+    const result=await pgClient.query(query);
+
+    } catch (error) {
+   // console.error(`Error while displaying view ${viewName}: `, error);
     throw error;
   }
 }

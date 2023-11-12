@@ -13,7 +13,9 @@ import {
   insertTrackData,
   createView,
   testView,
-  deleteAll
+  deleteAll,
+  altertable,
+  deleteView
 } from "./src/databaseUtils.js"
 import {downloadCSVDataFromS3,uploadToS3Bucket} from "./src/s3Utils.js"
 
@@ -35,11 +37,21 @@ const view2Name="view2"
 const view3Name="view3"
 
 //if value set to null, will read whole file
-const linesToRead = 100;
-const insertBatchSize = 5;
+const linesToRead = 1000;
+const insertBatchSize = 10;
 
 main()
 
+// await connectToAuroraPostgresql();
+
+// // await deleteView(view1Name)
+// // await deleteView(view2Name)
+// // await deleteView(view3Name)
+// // await altertable();
+
+// await deleteAll()
+
+// await disconnectToAuroraPostgresql();
 async function main() {
   readCsvData(track1FilePath, linesToRead, (error, trackData, trackHeader) => {
     if (error) {
@@ -76,12 +88,12 @@ async function main() {
           const flatArtistHeader = Object.values(artistHeader.flat());
           cleanArtistData.unshift(flatArtistHeader)
 
-          await uploadToS3Bucket(cleanTrackData, track1Filename)
-          await uploadToS3Bucket(cleanArtistData, artist1Filename)
+     //     await uploadToS3Bucket(cleanTrackData, track1Filename)
+    //      await uploadToS3Bucket(cleanArtistData, artist1Filename)
 
-          try {
+           try {
             await connectToAuroraPostgresql();
-
+            
             await deleteAll()
 
             if (cleanArtistData.length >0) {
@@ -98,17 +110,17 @@ async function main() {
               console.log("No tracks to insert.")
 
 
-           console.log("Testing the first view: ")
-           await createView(`${viewFolderName}/${view1Name}.sql`)
-          await testView(view1Name)
+          //  console.log("Testing the first view: ")
+          //  await createView(`${viewFolderName}/${view1Name}.sql`)
+          // await testView(view1Name)
 
-           console.log("Testing the second view: ")
-           await createView(`${viewFolderName}/${view2Name}.sql`)
-           await testView(view2Name)
+          //  console.log("Testing the second view: ")
+          //  await createView(`${viewFolderName}/${view2Name}.sql`)
+          //  await testView(view2Name)
 
-           console.log("Testing the third view: ")
-           await createView(`${viewFolderName}/${view3Name}.sql`)
-           await testView(view3Name)
+          //  console.log("Testing the third view: ")
+          //  await createView(`${viewFolderName}/${view3Name}.sql`)
+          //  await testView(view3Name)
 
           } catch (error) {
             console.error('An error occurred:', error);

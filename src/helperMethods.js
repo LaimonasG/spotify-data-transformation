@@ -23,15 +23,18 @@ export function explodeTrackReleaseDate(trackData) {
   return trackData.map(track => {
     track = [...track];
 
-    // Date column may only have the year value
-    if (track[7].length == 10) {
+    
+    if (track[7].length == 10) { //full date
       var year = track[7].substring(0, 4);
       var month = track[7].substring(5, 7);
       var day = track[7].substring(8, 10);
 
       track.splice(7, 1, year, month, day);
-    } else if (track[7].length == 4) {
+    } else if (track[7].length == 4) { //only year value
       track.splice(8, 0, 0, 0);
+    } else if (track[7].length == 7) { //year and month value
+      var month = track[7].substring(5, 7);
+      track.splice(8, 0, month, 0);
     }
 
     return track;
