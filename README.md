@@ -71,19 +71,21 @@ Follow these steps to get the project up and running on your local machine.
 
 After this, you will need to add enviromental variables to .env file in root directory: 
 
-AWS_BUCKET_NAME="spotifydatatransformed"   <br>
-AWS_ACCESS_KEY_ID="AKIAYYNVH5SEUYLRXNMS"   <br>
-AWS_SECRET_ACCESS_KEY="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"   <br>
-S3_REGION="eu-north-1"   <br>
+AWS_BUCKET_NAME   <br>
+AWS_ACCESS_KEY_ID   <br>
+AWS_SECRET_ACCESS_KEY   <br>
+S3_REGION   <br>
 
-AWS_AURORA_ENDPOINT="spotifydataset.cohs3ananwph.eu-north-1.rds.amazonaws.com"   <br>
-AWS_AURORA_PORT="5432"   <br>
-AWS_AURORA_USERNAME="laimonas"   <br>
-AWS_AURORA_PASSWORD="Kokosas97"   <br>
-AWS_AURORA_DATABASE="spotifydataset"   <br>
+AWS_AURORA_ENDPOINT  <br>
+AWS_AURORA_PORT   <br>
+AWS_AURORA_USERNAME   <br>
+AWS_AURORA_PASSWORD   <br>
+AWS_AURORA_DATABASE   <br>
 
 The dowloaded dataset files need to be placed inside data/ folder, in root directory. <br>
 File names are specified by dedicated variables, in index.js.
+
+Due to this being a public repository, i can't share AWS configuration.
 
 ## Usage 
 
@@ -95,7 +97,7 @@ You can run the app using the following command:
 
 Then in the console you will see information about the read data, transformed data, uploaded data and finally the sql view results will be displayed. 
 Using variables linesToRead and insertBatchSize, inside index.js file, you can change the amount of rows read and the batch size for uploading the data to 
-Aurora RDS. If linesToRead value is set to null, all rows will be read. 
+Aurora RDS. If linesToRead value is set to null, all rows will be read. Also, the myData/ folder contains some sample data in smaller quantities for testing.
 
 Uploaded S3 bucket data is stored inside result/ folder, each name has a unique timestamp: 
 
@@ -111,5 +113,8 @@ The finished task has some parts unfinished, due to lack of expertise with big d
 
  -Uploading to Aurora RDS is also flawed. Current approach mimics batch insertion, but still performs seperate insert statements for each row. Explored <br>
  posibilities to insert using COPY statement, this is probably the correct approach, but I didn't have enough time. <br>
+
+ -First view logic seems fine, but it keeps returning default 0 value for followers_sum. Because the sum logic is flawed, the second view also doesn't
+ return proper result. Tried using left joins and lateral joins. Third view seems to work as intended.
 
  
